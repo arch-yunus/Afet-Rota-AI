@@ -84,6 +84,41 @@ Projenin nihai hedefi, Türkiye'nin yerli **BKZS (Bölgesel Konumlama ve Zamanla
 
 ---
 
+## 🔬 Bilimsel Önem ve Teknik Üstünlük
+
+Afet-Rota-AI, geleneksel "Izgara Tabanlı" (Raster-based) sistemlerin aksine **"Grafa Dayalı Dinamik Ağırlıklandırma"** kullanır. Bu yaklaşımın temel avantajları:
+1. **Düğüm Hassasiyeti:** Sadece pikselleri değil, sokak kesişimlerini ve altyapı bağlantılarını (utility nodes) temsil eder.
+2. **Hesaplamalı Verimlilik:** Tüm şehri taramak yerine, sadece etkilenen graflar üzerinden binlerce kat daha hızlı rota günceller.
+3. **Çoklu Veri Füzyonu:** Optik (RGB) verinin göremediği (gece veya bulutlu hava) durumlarda SAR (Yapay Açıklıklı Radar) verisini sisteme entegre edebilecek elastik bir yapıdadır.
+
+---
+
+## 🌍 Küresel Hedefler ile Uyum (UN SDGs)
+
+Projemiz, Birleşmiş Milletler Sürdürülebilir Kalkınma Hedefleri ile doğrudan uyumludur:
+- **SKH 9 (Sanayi, Yenilikçilik ve Altyapı):** Dayanıklı altyapıların inşası ve yenilikçiliğin desteklenmesi.
+- **SKH 11 (Sürdürülebilir Şehirler ve Topluluklar):** Şehirlerin afetlere karşı dayanıklılığının artırılması ve kayıpların azaltılması.
+
+---
+
+## 📊 Sistem Yetkinlik Matrisi (Feature Matrix)
+
+| Yetkinlik | Seviye | Açıklama |
+| :--- | :--- | :--- |
+| **Rota Hesaplama** | Üstün | Dijkstra & A* (Dinamik Ağırlıklı) |
+| **Görsel Analiz** | İleri | SAR/Optik Veri Füzyon Simülasyonu |
+| **Operasyonel Kontrol** | Profesyonel | Çoklu Birim (Fleet) Yönetimi ve SOP Desteği |
+| **Entegrasyon** | Hazır | BKZS (Regional Positioning) Uyumlu API |
+| **Raporlama** | Otomatik | PDF/MD Görev Brifingi Üretimi |
+
+---
+
+## 📜 Operasyonel Standartlar (SOP)
+
+Saha ekiplerinin AI kararlarını nasıl yorumlaması gerektiğine dair standart yöntemler `docs/SOP_AI_Human_Coordination.md` dosyasında tanımlanmıştır. Bu, teknoloji-insan uyumunu (Human-in-the-loop) maksimize eder.
+
+---
+
 ## 👨‍💻 Geliştirici Bilgisi
 **Afet-Rota-AI Team** | TUA Astrohackathon 2026 Projesi
-*Systems Architecture & AI Optimization*
+*Ultimate Scientific & Strategic Ecosystem (Aethel-Max Version)*
