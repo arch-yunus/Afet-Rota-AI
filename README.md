@@ -119,6 +119,58 @@ Saha ekiplerinin AI kararlarını nasıl yorumlaması gerektiğine dair standart
 
 ---
 
+## 🏗️ Yayılım Mimarisi (Deployment Architecture)
+
+Sistem, konteynerize edilmiş (Docker) yapısı sayesinde hem merkez sunucularda hem de saha uç cihazlarında (Edge) koşturulabilir:
+
+```mermaid
+graph LR
+    subgraph "Saha Cihazı (Edge)"
+        U1[NVIDIA Jetson] -->|TensorRT| AI[AI Inference]
+    end
+
+    subgraph "Bulut / Merkez"
+        D1[Docker Container] -->|FastAPI| API[Route API]
+        K1[Kubernetes Cluster] -->|Scalability| API
+    end
+
+    subgraph "Veri Kaynağı"
+        S1[Satellite API] --> D1
+    end
+
+    AI -->|Anlık Risk Verisi| API
+    API -->|Optimize Rota| F1[Mobile/Web Client]
+```
+
+---
+
+## 🔬 Bilimsel Referanslar (Scientific Citations)
+
+Projenin temelindeki algoritmalar ve yaklaşımlar aşağıdaki akademik standartlara dayanmaktadır:
+* **Graph Theory:** Dijkstra, E. W. (1959). *A note on two problems in connexion with graphs.* 
+* **OSM Data:** Boeing, G. (2017). *OSMnx: New methods for acquiring, constructing, analyzing, and visualizing complex street networks.*
+* **Disaster Management:** UN-SPIDER (2023). *Satellite-based emergency mapping for disaster response.*
+
+---
+
+## 💻 Donanım Uyumluluk Matrisi (Hardware Matrix)
+
+| Cihaz Tipi | Önerilen Model | Rol |
+| :--- | :--- | :--- |
+| **Edge Inference** | NVIDIA Jetson AGX Orin | On-site AI Analizi |
+| **Merkez Sunucu** | 16 Core CPU / 64GB RAM | Global Rota Optimizasyonu |
+| **Saha Tableti** | IP68 Ragged Android | Operasyonel Navigasyon |
+
+---
+
+## 🛠️ Proje Yönetimi ve Sürdürülebilirlik
+
+Sistemin uzun vadeli başarısı için aşağıdaki belgeleri inceleyiniz:
+- [**Bakım Klavuzu (MAINTENANCE.md)**](file:///g:/Dier%20bilgisayarlar/Dizst%20Bilgisayarm/github%20repolarm/Afet-Rota-AI/MAINTENANCE.md): Veri ve model güncelleme döngüleri.
+- [**Katkı Sağlama (CONTRIBUTING.md)**](file:///g:/Dier%20bilgisayarlar/Dizst%20Bilgisayarm/github%20repolarm/Afet-Rota-AI/CONTRIBUTING.md): Geliştirici kuralları.
+
+---
+
 ## 👨‍💻 Geliştirici Bilgisi
 **Afet-Rota-AI Team** | TUA Astrohackathon 2026 Projesi
-*Ultimate Scientific & Strategic Ecosystem (Aethel-Max Version)*
+*Absolute Global Ecosystem (Aethel-Omega Final Handover)*
