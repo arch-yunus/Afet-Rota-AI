@@ -1,5 +1,7 @@
 # 🛰️ Afet-Rota-AI: Otonom Afet Lojistik ve Rota Optimizasyon Ekosistemi
 
+![Afet-Rota-AI Banner](docs/assets/banner.png)
+
 ![TUA Astrohackathon](https://img.shields.io/badge/Etkinlik-TUA_Astrohackathon-0052cc?style=for-the-badge)
 ![Milli Uzay Programı](https://img.shields.io/badge/Hedef-BKZS_Entegrasyonu-e60000?style=for-the-badge)
 ![Maturity](https://img.shields.io/badge/Sistem_Olgunluğu-Aethel--Plus-gold?style=for-the-badge)
