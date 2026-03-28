@@ -1,15 +1,21 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List, Optional, Tuple
 from src.routing.main_navigator import RouteEngine
 from src.routing.graph_utils import GraphLoader
+from src.routing.map_engine import MapEngine
+from src.routing.fleet_manager import FleetManager
+from src.api.mission_reports import ReportGenerator
 
-app = FastAPI(title="Afet-Rota-AI API", description="Afet Yönetimi Rota Optimizasyon Servisi")
+app = FastAPI(title="Afet-Rota-AI Professional API", description="Afet Yönetimi ve Koordinasyon Servisi")
 
-# Global State for Simulation
+# Global State
 loader = GraphLoader()
 G = loader.load_from_address("Besiktas, Istanbul", dist=2000)
 engine = RouteEngine(G)
+fleet = FleetManager(engine)
+mapper = MapEngine(G)
 reported_damages = []
 
 class DamageReport(BaseModel):
@@ -18,38 +24,45 @@ class DamageReport(BaseModel):
     type: str
 
 class RouteRequest(BaseModel):
+    unit_id: str
     start_coord: Tuple[float, float]
     target_coord: Tuple[float, float]
-    use_satellite_data: bool = True
+    optimization_mode: str = "safety_first"
 
-class RouteResponse(BaseModel):
-    route_nodes: List[int]
-    message: str
+@app.get("/", response_class=HTMLResponse)
+def dashboard():
+    return f"""
+    <html>
+        <body>
+            <h1>Afet-Rota-AI Operasyon Paneli</h1>
+            <p>Aktif Birim sayısı: {len(fleet.active_units)}</p>
+            <p>Tespit Edilen Engel: {len(reported_damages)}</p>
+            <a href="/get-map">Interaktif Haritayı Görüntüle</a>
+        </body>
+    </html>
+    """
 
-@app.get("/")
-def health_check():
-    return {"status": "active", "service": "Afet-Rota-AI", "graph_nodes": len(G.nodes)}
+@app.get("/get-map", response_class=HTMLResponse)
+def get_map():
+    all_routes = [d['route'] for d in fleet.active_units.values()]
+    m = mapper.create_mission_map(routes=all_routes, obstacles=[d.coords for d in reported_damages])
+    return m._repr_html_()
 
 @app.post("/report-damage")
 def report_damage(report: DamageReport):
     reported_damages.append(report)
     engine.apply_disaster_risk([report.coords])
-    return {"status": "success", "message": f"Hasar raporu işlendi: {report.type}"}
+    return {"status": "success", "message": f"Hasar raporu kaydedildi: {report.type}"}
 
-@app.post("/calculate-safe-route", response_model=RouteResponse)
-def get_safe_route(request: RouteRequest):
-    try:
-        route = engine.find_safe_route(request.start_coord, request.target_coord)
-        if not route:
-            raise HTTPException(status_code=404, detail="Güvenli rota bulunamadı.")
-        
-        return RouteResponse(
-            route_nodes=route,
-            message="BKZS verisi ve güncel hasar durumu ile optimize edilmiş rota."
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/assign-mission")
+def assign_mission(request: RouteRequest):
+    route = fleet.assign_mission(request.unit_id, request.start_coord, request.target_coord)
+    if not route:
+        raise HTTPException(status_code=404, detail="Birim için güvenli rota bulunamadı.")
+    return {"unit_id": request.unit_id, "route_nodes": route}
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.get("/mission-briefing")
+def get_briefing():
+    obstacles = [d.coords for d in reported_damages]
+    briefing_text = ReportGenerator.create_briefing("OP_HACKATHON_BEŞİKTAŞ", fleet.active_units, obstacles)
+    return {"briefing": briefing_text}

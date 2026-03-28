@@ -9,29 +9,35 @@ class RouteEngine:
     """
     def __init__(self, graph):
         self.G = graph
-        # Initialize edge weights with length
+        # Initialize edge weights
         for u, v, k, data in self.G.edges(data=True, keys=True):
-            data['weight'] = data.get('length', 1.0)
-            data['disaster_risk'] = 0.0
+            data['base_length'] = data.get('length', 1.0)
+            data['weight'] = data['base_length']
+            data['disaster_risk'] = 1.0 # 1.0 means no extra risk
 
-    def apply_disaster_risk(self, blocked_coords, radius_m=100, risk_factor=1000.0):
+    def apply_disaster_risk(self, blocked_coords, risk_factor=5000.0):
         """
-        Increases the weight of edges near blocked coordinates to simulate disaster impact.
+        Increases the weight of edges near blocked coordinates.
         """
         print(f"[*] Dinamik Risk Analizi: {len(blocked_coords)} bölge işleniyor...")
         for lat, lon in blocked_coords:
-            # Find nearest node or edges to the blocked point
             nearest_node = ox.distance.nearest_nodes(self.G, lon, lat)
-            # Penalize edges connected to this node
             for u, v, k in self.G.edges(nearest_node, keys=True):
-                self.G.edges[u, v, k]['weight'] *= risk_factor
-                self.G.edges[u, v, k]['disaster_risk'] = 1.0
-        print("[+] Yol Ağı Maliyetleri Güncellendi.")
+                self.G.edges[u, v, k]['disaster_risk'] = risk_factor
+        print("[+] Yol Ağı Risk Verileri Güncellendi.")
 
-    def find_safe_route(self, start_coords, end_coords):
+    def find_safe_route(self, start_coords, end_coords, mode="safety_first"):
         """
-        Calculates the shortest path between two points using weighted edges.
+        Calculates path with multi-objective optimization.
+        - safety_first: Extreme penalty for risky roads.
+        - time_first: Moderate penalty, prioritizes speed.
         """
+        risk_multiplier = 10.0 if mode == "safety_first" else 2.0
+        
+        # Temporary weight update for this calculation
+        for u, v, k, data in self.G.edges(data=True, keys=True):
+            data['weight'] = data['base_length'] * (data['disaster_risk'] ** risk_multiplier)
+
         orig_node = ox.distance.nearest_nodes(self.G, start_coords[1], start_coords[0])
         dest_node = ox.distance.nearest_nodes(self.G, end_coords[1], end_coords[0])
 
@@ -39,7 +45,6 @@ class RouteEngine:
             route = nx.shortest_path(self.G, orig_node, dest_node, weight='weight')
             return route
         except nx.NetworkXNoPath:
-            print("[!] Hata: Güvenli bir rota bulunamadı.")
             return None
 
 def main():
