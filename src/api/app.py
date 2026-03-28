@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 from src.routing.main_navigator import RouteEngine
 from src.routing.graph_utils import GraphLoader
 from src.routing.map_engine import MapEngine
@@ -9,6 +10,9 @@ from src.routing.fleet_manager import FleetManager
 from src.api.mission_reports import ReportGenerator
 
 app = FastAPI(title="Afet-Rota-AI Professional API", description="Afet Yönetimi ve Koordinasyon Servisi")
+
+# Mount Static Files for CSS
+app.mount("/static", StaticFiles(directory="src/api/static"), name="static")
 
 # Global State
 loader = GraphLoader()
@@ -32,13 +36,39 @@ class RouteRequest(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 def dashboard():
     return f"""
-    <html>
-        <body>
-            <h1>Afet-Rota-AI Operasyon Paneli</h1>
-            <p>Aktif Birim sayısı: {len(fleet.active_units)}</p>
-            <p>Tespit Edilen Engel: {len(reported_damages)}</p>
-            <a href="/get-map">Interaktif Haritayı Görüntüle</a>
-        </body>
+    <!DOCTYPE html>
+    <html lang="tr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Afet-Rota-AI Dashboard</title>
+        <link rel="stylesheet" href="/static/style.css">
+    </head>
+    <body>
+        <div class="dashboard-container">
+            <h1>🛰️ Afet-Rota-AI <span class="mission-badge">Operasyon Merkezi</span></h1>
+            <p>TUA Astrohackathon 2026 - Aethel-Plus Sistemi</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value">{len(fleet.active_units)}</span>
+                    <span class="stat-label">Aktif Kurtarma Birimi</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">{len(reported_damages)}</span>
+                    <span class="stat-label">Tespit Edilen Engel</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">{len(G.nodes)}</span>
+                    <span class="stat-label">Yol Ağı Graf Düğümü</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <a href="/get-map" class="btn">🗺️ İnteraktif Görev Haritası</a>
+                <a href="/mission-briefing" class="btn" style="background: #30363d;">📄 Görev Brifingi Al</a>
+            </div>
+        </div>
+    </body>
     </html>
     """
 

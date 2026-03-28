@@ -1,95 +1,89 @@
-# 🛰️ Afet-Rota-AI: Afet Yönetimi İçin Otonom Rota Optimizasyon Sistemi
+# 🛰️ Afet-Rota-AI: Otonom Afet Lojistik ve Rota Optimizasyon Ekosistemi
 
-![TUA Astrohackathon](https://img.shields.io/badge/Etkinlik-TUA_Astrohackathon-0052cc?style=flat-square)
-![Milli Uzay Programı](https://img.shields.io/badge/Hedef-BKZS-e60000?style=flat-square)
-![Sürüm](https://img.shields.io/badge/Sürüm-v1.0.0--beta-orange?style=flat-square)
-![Teknoloji](https://img.shields.io/badge/Teknoloji-Computer_Vision_%7C_Graph_Optimization-2ea44f?style=flat-square)
+![TUA Astrohackathon](https://img.shields.io/badge/Etkinlik-TUA_Astrohackathon-0052cc?style=for-the-badge)
+![Milli Uzay Programı](https://img.shields.io/badge/Hedef-BKZS_Entegrasyonu-e60000?style=for-the-badge)
+![Maturity](https://img.shields.io/badge/Sistem_Olgunluğu-Aethel--Plus-gold?style=for-the-badge)
 
-## 📌 Yüksek Düzey Özet
-**Afet-Rota-AI**, olası doğal afetler (deprem, sel, heyelan) sonrasında arama-kurtarma ve lojistik ekiplerinin afet bölgesine en hızlı ve en güvenli şekilde ulaşmasını sağlamak amacıyla geliştirilmiş, uydu verisi tabanlı bir Karar Destek ve Navigasyon Sistemidir. 
-
-Sistem; yerli gözlem uydularından alınan güncel görüntüleri derin öğrenme modelleriyle analiz ederek kapanan yolları, yıkılan köprüleri ve enkaz bölgelerini otonom olarak tespit eder. Bu tespitler, Türkiye'nin Bölgesel Konumlama ve Zamanlama Sistemi (BKZS) altyapısı ile entegre edilerek sahadaki ekipler için dinamik, güvenli ve kesintisiz rotalar oluşturur.
+**Afet-Rota-AI**, afet sonrası "Altın Saatler" içerisinde arama-kurtarma ekiplerinin en büyük engeli olan **"Statik Harita Bilgisizliği"** sorununu, yerli uydu verileri ve dinamik ağ optimizasyonu ile çözen uçtan uca bir Karar Destek Sistemidir.
 
 ---
 
-## 🏗️ Problem Tanımı ve Geleneksel Sistemlerin Zafiyeti
-Afet anlarında ilk 72 saat ("Altın Saatler") hayati önem taşır. Ancak günümüzde arama-kurtarma operasyonlarında karşılaşılan en büyük teknolojik engeller şunlardır:
-1. **Statik Harita Yanılgısı:** Standart navigasyon uygulamaları yolların anlık fiziksel durumunu (yıkıntı, çatlak, su baskını) bilemez. Yıkılmış veya kapanmış bir sokağı "açık" göstererek ekipleri çıkmaz sokaklara veya tehlikeli bölgelere yönlendirebilir.
-2. **Konumlama ve Sinyal Güvenilirliği:** Küresel GNSS sistemleri, yoğun enkaz alanlarında yansıma (multipath) veya sinyal kesintisi yaşatabilir.
+## 🏗️ Sistem Mimarisi (Architectural Overview)
 
-**Afet-Rota-AI**, uzaydan alınan taze (near real-time) veriyi işleyerek bu belirsizlikleri ortadan kaldırır ve ekiplere sadece en kısa değil, **"en güvenli"** yolu sunar.
+Aşağıdaki diyagram, uzay segmentinden başlayarak saha ekiplerine uzanan tam otonom veri akışını göstermektedir:
+
+```mermaid
+graph TD
+    subgraph "Uzay Segmenti"
+        S1[İMECE / GÖKTÜRK-1] -->|Yüksek Çözünürlüklü Optik/SAR| V1
+    end
+
+    subgraph "Afet-Rota-AI Çekirdek"
+        V1[Damage Assessment AI] -->|Enkaz Poligonları & Koordinat| G1[Dynamic Graph Engine]
+        O1[OpenStreetMap Data] -->|Yol Ağı Grafı| G1
+        G1 -->|Maliyet Güncelleme| R1[Multi-Objective Router]
+    end
+
+    subgraph "Saha & Haberleşme"
+        B1[BKZS Yerli Konumlandırma] -->|Anlık GPS/GNSS| R1
+        R1 -->|Güvenli Rota API| F1[Rescue Fleet / Mobile App]
+        F1 -->|Geri Bildirim| V1
+    end
+
+    style V1 fill:#f96,stroke:#333
+    style G1 fill:#69f,stroke:#333
+    style R1 fill:#9f6,stroke:#333
+```
 
 ---
 
-## 🛠️ Teknik Yaklaşım ve Çok Disiplinli Sistem Mimarisi
+## 🧠 Matematiksel Model ve Optimizasyon
 
-Sistem, yapay zeka ve ağ (graph) teorisini birleştiren 3 ana modülden oluşmaktadır:
+Sistem, yolların maliyetini sadece mesafe bazlı değil, **"Risk Katsayısı"** odaklı hesaplar. $e$ kenarı (yol parçası) için dinamik maliyet fonksiyonu:
 
-### 1. Uydu Görüntüsü İşleme Modülü (Damage Assessment AI)
-* Yüksek çözünürlüklü uydu görüntüleri veya SAR verileri sisteme girdi olarak sağlanır.
-* **Semantic Segmentation (Örn: U-Net veya Mask R-CNN):** Görüntüler üzerindeki bina yıkıntıları ve ulaşıma kapanan yol arterleri tespit edilir.
-* Model çıktısı, coğrafi koordinatlara sahip çokgenler (risk poligonları) olarak dışa aktarılır.
-
-### 2. Dinamik Graph (Ağ) Güncelleme ve Maliyet Hesaplama
-* Mevcut yol ağları (OpenStreetMap verileri) düğüm (node) ve kenarlardan (edge) oluşan bir matematiksel ağa dönüştürülür.
-* Görüntü işleme modülünden gelen risk poligonları, yolların "maliyet (cost)" değerlerini dinamik olarak günceller. Her bir yol parçasının geçiş maliyeti şu formülle hesaplanır:
-
-$$Cost(e) = Distance(e) \times (1 + W_{hasar} \cdot R(e))$$
+$$Cost(e, mode) = Distance(e) \cdot \Phi(e)^{P_{mode}}$$
 
 Burada:
-* $Distance(e)$: Yol parçasının uzunluğu.
-* $W_{hasar}$: Tespit edilen hasarın türüne göre belirlenen ağırlık katsayısı (Örn. tam yıkım için $\infty$, kısmi enkaz için yüksek ceza puanı).
-* $R(e)$: Yolun hasar gören yüzdesi.
-
-### 3. BKZS Entegrasyonu ve Rota Optimizasyonu
-* Maliyetleri güncellenmiş bu dinamik harita üzerinde **Dijkstra** veya **A*** algoritmaları koşturularak başlangıç (kurtarma ekibi) ve hedef (enkaz bölgesi) arasındaki en optimum rota hesaplanır.
-* Yerli BKZS altyapısı sayesinde yüksek hassasiyetli konumlama ile ekiplerin anlık takibi sağlanır.
+- $\Phi(e)$: AI Vision modülünden gelen **Hasar/Risk İndeksi** (1.0 = Güvenli, 5000.0 = Tam Blokaj).
+- $P_{mode}$: Kullanıcı seçimli optimizasyon sertliği.
+    - **Safety-First ($P=10$):** En küçük riskte dahi uzun deturları tercih eder.
+    - **Time-First ($P=2$):** Hız ve risk arasında denge kurar.
 
 ---
 
-## 📂 Depo Yapısı (Repository Structure)
+## 🛠️ Profesyonel Özellikler (Aethel-Plus)
 
-```text
-Afet-Rota-AI/
-└── data/
-    ├── raw_satellite_images/ # Girdi uydu görüntüleri
-    └── osm_street_networks/  # Temel yol ağ verileri (JSON/XML)
-└── src/
-    ├── vision/               # Görüntü işleme ve enkaz tespit modelleri
-    ├── routing/              # Dinamik maliyet hesaplama ve A* algoritması
-    ├── api/                  # Saha ekipleri için rota sunan REST API uç noktaları
-└── notebooks/
-    └── Rota_Optimizasyon_Simulasyonu.ipynb # Görselleştirilmiş test senaryosu
-└── requirements.txt
-└── README.md
-```
+| Özellik | Tanımlama | Teknoloji |
+| :--- | :--- | :--- |
+| **Dinamik Rerouting** | Yol kapandığında BKZS verisiyle 1 sn altında yeni rota üretimi. | NetworkX / Dijkstra |
+| **Fleet Management** | Birden fazla ekibin dar sokaklarda çakışmasını önleyen filo koordinasyonu. | Custom Weight Penalizer |
+| **Interactive GIS** | Operasyon merkezleri için Folium tabanlı interaktif görev haritaları. | Folium / Leaflet.js |
+| **AI Vision Pipeline** | SAR ve Optik görüntülerden otonom enkaz tespiti (Simüle). | PyTorch / OpenCV |
 
 ---
 
-## 🚀 Kurulum ve Prototip Testi
-Sistemin rota hesaplama çekirdeğini kendi bilgisayarınızda test etmek için:
+## 🚀 Hızlı Başlangıç (Quick Start)
 
+### 1. Kurulum
 ```bash
-# Depoyu klonlayın
-git clone https://github.com/kullaniciadi/Afet-Rota-AI.git
-cd Afet-Rota-AI
-
-# Gerekli bağımlılıkları yükleyin (OSMnx, NetworkX vb.)
+git clone https://github.com/arch-yunus/Afet-Rota-AI.git
 pip install -r requirements.txt
-
-# Örnek afet senaryosu (Sentetik enkaz verisi) ile güvenli rota hesaplamasını başlatın
-python src/routing/main_navigator.py --start_coord "41.015,28.979" --target_coord "41.025,28.985"
 ```
 
+### 2. Operasyonel Dashboard Başlatma
+Sistemi görsel arayüzü ve API servisleri ile başlatmak için:
+```bash
+python -m uvicorn src.api.app:app --reload
+```
+Dashboard'u görüntülemek için tarayıcınızdan `http://localhost:8000` adresine gidin.
+
 ---
 
-## 🗺️ Gelecek Hedefleri (Roadmap)
-- [ ] **Edge AI (Uç Bilişim):** Haberleşmenin koptuğu durumlarda, İHA'lardan alınan anlık görüntülerin doğrudan araç içi bilgisayarlarda işlenmesi.
-- [ ] **Filo Optimizasyonu:** Aynı bölgeye giden birden fazla itfaiye/ambulans aracının dar sokaklarda karşılaşarak trafik oluşturmasını engelleyecek zamanlı senkronizasyon (BKZS zaman verisi ile).
+## 🗺️ Gelecek Vizyonu: TUA BKZS Entegrasyonu
+Projenin nihai hedefi, Türkiye'nin yerli **BKZS (Bölgesel Konumlama ve Zamanlama Sistemi)** altyapısını kullanarak, GPS sinyalinin zayıf olduğu enkaz kanyonlarında dahi santimetre hassasiyetinde ve tam güvenli navigasyon sunmaktır.
 
 ---
 
-## 👨‍💻 Geliştirici
-Bu proje, **TUA Astrohackathon** etkinliği kapsamında afet koordinasyonunu veri bilimi ve operasyonel sistem tasarımlarıyla çözmek amacıyla geliştirilmiştir.
-
-**Sistem Tasarımı ve Geliştirme:** Multi-Disciplinary Systems Designer | Solopreneur | AI & Industrial Optimization
+## 👨‍💻 Geliştirici Bilgisi
+**Afet-Rota-AI Team** | TUA Astrohackathon 2026 Projesi
+*Systems Architecture & AI Optimization*
