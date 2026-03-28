@@ -3,8 +3,7 @@ import numpy as np
 
 class DamageScanner:
     """
-    Placeholder for the Computer Vision module that identifies blocked roads 
-    and collapsed buildings from satellite imagery.
+    Computer Vision module for identifying disaster zones.
     """
     def __init__(self, model_path=None):
         self.model_path = model_path
@@ -12,18 +11,18 @@ class DamageScanner:
 
     def analyze_image(self, image_data):
         """
-        Simulates semantic segmentation for damage assessment.
-        Returns a list of polygons representing high-risk zones.
+        Simulates image processing and returns high-risk coordinates.
         """
         print("[*] Uydu Görüntüsü Analiz Ediliyor...")
-        # Simulated risk polygons (lon, lat, severity)
-        risk_zones = [
-            {"poly": [(41.020, 28.980), (41.021, 28.981)], "severity": 0.9, "type": "debris"},
-            {"poly": [(41.022, 28.982), (41.023, 28.983)], "severity": 1.0, "type": "collapsed_bridge"}
+        # Simulated detections (lat, lon, severity)
+        detections = [
+            {"coords": (41.040, 29.005), "severity": 0.9, "type": "road_blockage"},
+            {"coords": (41.042, 29.010), "severity": 1.0, "type": "structural_collapse"}
         ]
-        return risk_zones
+        return detections
 
 if __name__ == "__main__":
     scanner = DamageScanner()
-    zones = scanner.analyze_image(None)
-    print(f"[+] {len(zones)} Adet Riskli Bölge Tespit Edildi.")
+    reports = scanner.analyze_image(None)
+    for r in reports:
+        print(f"[!] Tespit Edildi: {r['type']} @ {r['coords']} (Şiddet: {r['severity']})")
